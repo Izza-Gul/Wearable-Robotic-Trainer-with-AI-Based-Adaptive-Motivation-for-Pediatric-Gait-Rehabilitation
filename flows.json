@@ -1,0 +1,1321 @@
+[
+    {
+        "id": "ce79c7761474feb1",
+        "type": "tab",
+        "label": "Robot",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "8d8914b2227b2774",
+        "type": "ui_text_input",
+        "z": "ce79c7761474feb1",
+        "name": "Child Name",
+        "label": "Child Full Name:",
+        "group": "child_group",
+        "order": 1,
+        "width": 6,
+        "height": 1,
+        "passthru": false,
+        "mode": "text",
+        "delay": 300,
+        "topic": "child_name",
+        "x": 330,
+        "y": 320,
+        "wires": [
+            [
+                "631885f11cad80bf"
+            ]
+        ]
+    },
+    {
+        "id": "5a9e8ccb1958efd3",
+        "type": "ui_numeric",
+        "z": "ce79c7761474feb1",
+        "name": "Maximum Weight",
+        "label": "Maximum Weight (kg):",
+        "tooltip": "",
+        "group": "child_group",
+        "order": 4,
+        "width": "6",
+        "height": "1",
+        "wrap": false,
+        "passthru": false,
+        "topic": "max_weight",
+        "topicType": "str",
+        "format": "",
+        "min": "8",
+        "max": "15",
+        "step": 0.5,
+        "className": "",
+        "x": 350,
+        "y": 440,
+        "wires": [
+            [
+                "631885f11cad80bf"
+            ]
+        ]
+    },
+    {
+        "id": "631885f11cad80bf",
+        "type": "function",
+        "z": "ce79c7761474feb1",
+        "name": "Store Data",
+        "func": "// Store Data Function - Improved Version\nconst topic = msg.topic;\nconst value = msg.payload;\n\nswitch (topic) {\n    case 'child_name':\n        flow.set('child_name', value);\n        node.status({fill:'blue', shape:'dot', text:'Name saved'});\n        break;\n        \n    case 'exercise':\n        flow.set('exercise', value);\n        break;\n        \n    case 'phase':\n        flow.set('phase', value);\n        break;\n        \n    case 'max_weight':\n        flow.set('max_weight', value);\n        break;\n        \n    default:\n        node.warn(`Unknown topic: ${topic}`);\n}\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 550,
+        "y": 360,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "7dc6febc0cc3bda5",
+        "type": "ui_text",
+        "z": "ce79c7761474feb1",
+        "group": "child_group",
+        "order": 0,
+        "width": "6",
+        "height": "5",
+        "name": "Welcome Message",
+        "label": "",
+        "format": "<div style='text-align:center;padding:20px;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:white;border-radius:10px;margin-bottom:20px;'><h1 style='margin:0 0 10px 0;'>🏥 Children Gait Rehabilitation System</h1><p style='margin:0;font-size:16px;opacity:0.9;'>Intelligent Physical Therapy System</p><div style='margin-top:15px;font-size:12px;opacity:0.8;'><div style='display:block;margin:5px 0;'>✅ Dashboard Active</div><div style='display:block;margin:5px 0;'>📡 MQTT Connected</div><div style='display:block;margin:5px 0;'>📊 Logging System Ready</div></div></div>",
+        "layout": "row-spread",
+        "className": "",
+        "style": false,
+        "font": "",
+        "fontSize": "",
+        "color": "#000000",
+        "x": 350,
+        "y": 260,
+        "wires": []
+    },
+    {
+        "id": "32e5de9a332201d5",
+        "type": "ui_button",
+        "z": "ce79c7761474feb1",
+        "name": "Start Exercise",
+        "group": "control_group",
+        "order": 1,
+        "width": 3,
+        "height": 1,
+        "passthru": false,
+        "label": "▶️ Start Exercise",
+        "color": "green",
+        "bgcolor": "",
+        "icon": "",
+        "payload": "start",
+        "payloadType": "str",
+        "topic": "start",
+        "topicType": "str",
+        "x": 340,
+        "y": 520,
+        "wires": [
+            [
+                "4dc4f1da016ab6ce"
+            ]
+        ]
+    },
+    {
+        "id": "4dc4f1da016ab6ce",
+        "type": "function",
+        "z": "ce79c7761474feb1",
+        "name": "Process Start",
+        "func": "// Get values from flow\nlet child = flow.get('child_name') || '';\nlet exercise = flow.get('exercise') || 'walk';\nlet phase = flow.get('phase') || '1';\nlet weight = flow.get('max_weight') || 30;\n\n// Check if child name is entered\nif (child.trim() === '') {\n    node.status({ fill: 'red', shape: 'ring', text: '⚠️ Enter child name first' });\n    return null; // Stop execution, do not send message\n}\n\n// Prepare message for ESP32\nmsg.payload = {\n    action: \"start\",\n    exercise: exercise,\n    phase: phase,\n    max_weight: parseFloat(weight)\n};\nmsg.topic = \"BushraIzzaHafsa/robot/control/start\";\n\n// Update node status\nnode.status({fill:'green', shape:'dot', text:'🎯 Start command sent'});\nflow.set(\"system_status\", \"active\");\nflow.set(\"action\", \"start\");\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 540,
+        "y": 520,
+        "wires": [
+            [
+                "1c53b71e90fc57f8"
+            ]
+        ]
+    },
+    {
+        "id": "1c53b71e90fc57f8",
+        "type": "mqtt out",
+        "z": "ce79c7761474feb1",
+        "name": "Send Start Command",
+        "topic": "BushraIzzaHafsa/robot/control/start",
+        "qos": "1",
+        "retain": false,
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "mqtt_broker",
+        "x": 800,
+        "y": 520,
+        "wires": []
+    },
+    {
+        "id": "e481570328b3bf2b",
+        "type": "mqtt in",
+        "z": "ce79c7761474feb1",
+        "name": "ESP32 Status",
+        "topic": "BushraIzzaHafsa/robot/status",
+        "qos": "1",
+        "datatype": "json",
+        "broker": "mqtt_broker",
+        "nl": false,
+        "rap": false,
+        "inputs": 0,
+        "x": 1020,
+        "y": 520,
+        "wires": [
+            [
+                "dbb9eb4354ab1038"
+            ]
+        ]
+    },
+    {
+        "id": "dbb9eb4354ab1038",
+        "type": "function",
+        "z": "ce79c7761474feb1",
+        "name": "Log To Google Sheets",
+        "func": "let status = msg.payload.status;\n\nlet data = {\n    child_name: flow.get('child_name') || '',\n    exercise: flow.get('exercise') || 'walk',\n    phase: flow.get('phase') || '1',\n    max_weight: flow.get('max_weight') || 30,\n    systemStatus: status === \"started\" ? \"active\" : \"inactive\"\n};\n\nmsg.payload = data;\n\nif (status === \"started\") {\n    node.status({fill:'blue', shape:'dot', text:'Session Active Logged'});\n} else {\n    node.status({fill:'red', shape:'ring', text:'Session Inactive Logged'});\n}\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1220,
+        "y": 520,
+        "wires": [
+            [
+                "post_to_gsheet"
+            ]
+        ]
+    },
+    {
+        "id": "f72a14e95f68b424",
+        "type": "ui_button",
+        "z": "ce79c7761474feb1",
+        "name": "Stop Exercise",
+        "group": "control_group",
+        "order": 2,
+        "width": 3,
+        "height": 1,
+        "passthru": false,
+        "label": "⏹️ Stop Exercise",
+        "color": "red",
+        "bgcolor": "",
+        "icon": "",
+        "payload": "stop",
+        "payloadType": "str",
+        "topic": "stop",
+        "topicType": "str",
+        "x": 340,
+        "y": 560,
+        "wires": [
+            [
+                "5545d7c91d78cac2"
+            ]
+        ]
+    },
+    {
+        "id": "5545d7c91d78cac2",
+        "type": "function",
+        "z": "ce79c7761474feb1",
+        "name": "Stop Exercise Function",
+        "func": "// تحديث حالة النظام و نوع الإجراء\nflow.set(\"system_status\", \"inactive\");\nflow.set(\"action\", \"stop\");\n\n// تجهيز البيانات للـ Google Sheet كـ object\nlet data = {\n    child_name: flow.get('child_name') || '',\n    exercise: flow.get('exercise') || 'walk',\n    phase: flow.get('phase') || '1',\n    max_weight: flow.get('max_weight') || 30,\n    systemStatus: \"inactive\"\n};\n\nmsg.payload = data;\n\n// topic للـ MQTT\nmsg.topic = \"BushraIzzaHafsa/robot/control/stop\";\n\n// تحديث حالة النود على الـ Dashboard\nnode.status({fill:'red', shape:'ring', text:'Session stopped'});\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 550,
+        "y": 560,
+        "wires": [
+            [
+                "28543ac0b6e28269",
+                "51067a5c2f315da2"
+            ]
+        ]
+    },
+    {
+        "id": "28543ac0b6e28269",
+        "type": "mqtt out",
+        "z": "ce79c7761474feb1",
+        "name": "Send Stop Command",
+        "topic": "BushraIzzaHafsa/robot/control/stop",
+        "qos": 1,
+        "retain": false,
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "mqtt_broker",
+        "x": 800,
+        "y": 560,
+        "wires": []
+    },
+    {
+        "id": "3dff3671f815d18e",
+        "type": "function",
+        "z": "ce79c7761474feb1",
+        "name": "Emergency Stop Function",
+        "func": "// تحديث حالة النظام و نوع الإجراء\nflow.set(\"system_status\", \"inactive\");\nflow.set(\"action\", \"emergency_stop\");\n\n// تجهيز البيانات للـ Google Sheet كـ object\nlet data = {\n    child_name: flow.get('child_name') || '',\n    exercise: flow.get('exercise') || 'walk',\n    phase: flow.get('phase') || '1',\n    max_weight: flow.get('max_weight') || 30,\n    systemStatus: \"inactive\"\n};\nmsg.payload = data;\n\n// topic للـ MQTT\nmsg.topic = \"BushraIzzaHafsa/robot/control/emergency_stop\";\n\n// تحديث حالة النود على الـ Dashboard\nnode.status({fill:'orange', shape:'ring', text:'Emergency stopped'});\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 570,
+        "y": 620,
+        "wires": [
+            [
+                "8700f01ba06152f0",
+                "51067a5c2f315da2"
+            ]
+        ]
+    },
+    {
+        "id": "68b3b60cf937df27",
+        "type": "ui_button",
+        "z": "ce79c7761474feb1",
+        "name": "Emergency Stop",
+        "group": "control_group",
+        "order": 3,
+        "width": 3,
+        "height": 1,
+        "passthru": false,
+        "label": "🆘 Emergency Stop",
+        "color": "orange",
+        "bgcolor": "",
+        "icon": "",
+        "payload": "emergency",
+        "payloadType": "str",
+        "topic": "emergency",
+        "topicType": "str",
+        "x": 350,
+        "y": 600,
+        "wires": [
+            [
+                "3dff3671f815d18e"
+            ]
+        ]
+    },
+    {
+        "id": "8700f01ba06152f0",
+        "type": "mqtt out",
+        "z": "ce79c7761474feb1",
+        "name": "Send Emergency Command",
+        "topic": "BushraIzzaHafsa/robot/control/emergency_stop",
+        "qos": 1,
+        "retain": false,
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "mqtt_broker",
+        "x": 880,
+        "y": 600,
+        "wires": []
+    },
+    {
+        "id": "weight_alert_checker_control",
+        "type": "function",
+        "z": "ce79c7761474feb1",
+        "name": "Weight Alert Checker",
+        "func": "// Read data from payload\nlet currentWeight = msg.payload.currentWeight;\nlet maxWeight = msg.payload.maxWeight;\nlet systemStatus = msg.payload.systemStatus || 'inactive';\n\n// Get previous alerts\nlet alerts = global.get('alerts') || [];\n\nlet alertMsg = '';\nlet alertType = 'info';\n\nif(systemStatus.toLowerCase() === 'active'){\n    if(currentWeight > maxWeight){\n        alertMsg = `⚠️ Current weight (${currentWeight} kg) exceeded maximum (${maxWeight} kg)`;\n        alertType = 'danger';\n    } else {\n        alertMsg = `✅ Weight is normal (${currentWeight} kg)`;\n        alertType = 'success';\n    }\n} else {\n    alertMsg = 'ℹ️ System is inactive';\n    alertType = 'info';\n}\n\n// Add new alert on top\nalerts.unshift({ message: alertMsg, type: alertType, timestamp: Date.now() });\n\n// Save to global context\nglobal.set('alerts', alerts);\n\nmsg.payload = alerts;\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 520,
+        "y": 180,
+        "wires": [
+            [
+                "32e1fc15fa36cf16"
+            ]
+        ]
+    },
+    {
+        "id": "32e1fc15fa36cf16",
+        "type": "ui_template",
+        "z": "ce79c7761474feb1",
+        "group": "control_group",
+        "name": "Alerts and Warnings",
+        "order": 4,
+        "width": "6",
+        "height": "10",
+        "format": "<style>\n    .alerts-container {\n        max-height: 300px;\n        overflow-y: auto;\n        margin-top: 10px;\n        padding-right: 5px;\n    }\n\n    .alert-item {\n        padding: 10px 15px;\n        margin-bottom: 8px;\n        border-radius: 5px;\n        border-left: 4px solid;\n        background: white;\n        box-shadow: 0 2px 4px rgba(0,0,0,0.05);\n        font-size: 14px;\n    }\n\n    .alert-warning { border-left-color: #ffc107; background-color: #fff3cd; color: #856404; }\n    .alert-danger { border-left-color: #dc3545; background-color: #f8d7da; color: #721c24; }\n    .alert-info { border-left-color: #17a2b8; background-color: #d1ecf1; color: #0c5460; }\n    .alert-success { border-left-color: #28a745; background-color: #d4edda; color: #155724; }\n\n    .alert-time { font-size: 11px; color: #6c757d; margin-top: 3px; font-style: italic; }\n    .clear-alerts { background: #6c757d; color: white; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer; font-size: 12px; float: right; margin-bottom: 5px; }\n    .clear-alerts:hover { background: #5a6268; }\n    .alerts-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }\n    .no-alerts { text-align: center; padding: 30px 20px; color: #6c757d; font-style: italic; background: #f8f9fa; border-radius: 5px; margin-top: 10px; }\n</style>\n\n<div class=\"alerts-header\">\n    <h3 style=\"margin:0;\">🔔 Alerts and Warnings</h3>\n    <button class=\"clear-alerts\" onclick=\"clearAlerts()\">🗑️ Clear All</button>\n</div>\n\n<div class=\"alerts-container\" id=\"alertsList\">\n    <div class=\"no-alerts\" id=\"noAlertsMessage\">\n        <!-- Message handled dynamically -->\n    </div>\n</div>\n\n<script>\nfunction clearAlerts() {\n    node.send({topic: 'clear_alerts'});\n    updateAlertsDisplay();\n}\n\nfunction updateAlertsDisplay() {\n    var alertsContainer = document.getElementById('alertsList');\n    var noAlertsMessage = document.getElementById('noAlertsMessage');\n\n    // remove old alerts\n    var existingAlerts = document.querySelectorAll('.alert-item');\n    existingAlerts.forEach(a => a.remove());\n\n    // read global variables\n    var maxWeight = global.get('maxWeight') || 0;\n    var currentWeight = global.get('currentWeight') || 0;\n    var systemStatus = global.get('systemStatus') || 'inactive';\n\n    var alerts = [];\n\n    if(systemStatus !== 'active') {\n        alerts.push({message: 'System is inactive', type: 'info', timestamp: Date.now()});\n    } else {\n        if(currentWeight > maxWeight) {\n            alerts.push({message: '⚠️ Current weight exceeded maximum weight!', type: 'warning', timestamp: Date.now()});\n        }\n    }\n\n    // display alerts\n    if(alerts.length === 0) {\n        noAlertsMessage.innerHTML = 'All systems normal ✅<br><small>System is running</small>';\n    } else {\n        noAlertsMessage.style.display = 'none';\n        alerts.forEach(alert => {\n            var alertDiv = document.createElement('div');\n            alertDiv.className = 'alert-item alert-' + (alert.type || 'info');\n            var timeText = formatTime(alert.timestamp);\n            alertDiv.innerHTML = `<div style=\"font-weight:500\">${alert.message}</div><div class=\"alert-time\">${timeText}</div>`;\n            alertsContainer.appendChild(alertDiv);\n        });\n    }\n}\n\nfunction formatTime(timestamp){\n    if(!timestamp) return 'Just now';\n    var seconds = Math.floor((Date.now()-timestamp)/1000);\n    if(seconds<60) return seconds+' seconds ago';\n    if(seconds<3600) return Math.floor(seconds/60)+' minutes ago';\n    if(seconds<86400) return Math.floor(seconds/3600)+' hours ago';\n    return Math.floor(seconds/86400)+' days ago';\n}\n\nupdateAlertsDisplay();\nsetInterval(updateAlertsDisplay, 2000);\nsetInterval(()=>{node.send({topic:'refresh_alerts'});},5000);\n</script>",
+        "storeOutMessages": true,
+        "fwdInMessages": true,
+        "resendOnRefresh": false,
+        "templateScope": "local",
+        "className": "",
+        "x": 560,
+        "y": 240,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "post_to_gsheet",
+        "type": "http request",
+        "z": "ce79c7761474feb1",
+        "name": "POST to Google Script",
+        "method": "POST",
+        "ret": "txt",
+        "paytoqs": "ignore",
+        "url": "https://script.google.com/macros/s/.../exec",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [],
+        "x": 1460,
+        "y": 520,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "51067a5c2f315da2",
+        "type": "http request",
+        "z": "ce79c7761474feb1",
+        "name": "POST to Google Script",
+        "method": "POST",
+        "ret": "txt",
+        "paytoqs": "ignore",
+        "url": "https://script.google.com/macros/s/.../exec",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [],
+        "x": 820,
+        "y": 660,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "9b538afabcd7aefb",
+        "type": "inject",
+        "z": "ce79c7761474feb1",
+        "name": "Auto refresh 1min",
+        "props": [
+            {
+                "p": "payload"
+            }
+        ],
+        "repeat": "10",
+        "crontab": "",
+        "once": true,
+        "onceDelay": "",
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 830,
+        "y": 360,
+        "wires": [
+            [
+                "4d5c1844a77d9202"
+            ]
+        ]
+    },
+    {
+        "id": "4d5c1844a77d9202",
+        "type": "http request",
+        "z": "ce79c7761474feb1",
+        "name": "GET Google Script",
+        "method": "GET",
+        "ret": "obj",
+        "paytoqs": "ignore",
+        "url": "https://script.google.com/macros/s/.../exec",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [],
+        "x": 1050,
+        "y": 360,
+        "wires": [
+            [
+                "5cef9f879a90e05d"
+            ]
+        ]
+    },
+    {
+        "id": "5cef9f879a90e05d",
+        "type": "function",
+        "z": "ce79c7761474feb1",
+        "name": "Data Processing",
+        "func": "// Get data from the script\nlet data = msg.payload;\n\n// ========== For diagnostics ==========\n// Log the data type in Node-RED log\nnode.log(\"========== Starting data processing ==========\");\nnode.log(\"Data type: \" + typeof data);\nnode.log(\"Is it an array? \" + Array.isArray(data));\nif (data) {\n    node.log(\"Number of elements: \" + (Array.isArray(data) ? data.length : 'Not an array'));\n    if (Array.isArray(data) && data.length > 0) {\n        node.log(\"First element type: \" + typeof data[0]);\n        node.log(\"Is first element an object? \" + (typeof data[0] === 'object'));\n        node.log(\"First element keys: \" + Object.keys(data[0]).join(', '));\n    }\n}\n// ==============================\n\n// Ensure data exists\nif (!data) {\n    node.log(\"❌ No data available!\");\n    msg.payload = [];\n    return msg;\n}\n\n// If data is an array of objects (as the script currently sends)\nif (Array.isArray(data)) {\n    if (data.length === 0) {\n        node.log(\"✅ Empty array\");\n        msg.payload = [];\n        return msg;\n    }\n    \n    // Verify that elements are objects\n    if (typeof data[0] === 'object' && !Array.isArray(data[0])) {\n        node.log(\"✅ Data is correct: array of objects\");\n        node.log(\"✅ Number of records: \" + data.length);\n        // Data is ready for display as is\n        msg.payload = data;\n        return msg;\n    }\n    \n    // If it's an array of arrays (for compatibility)\n    if (Array.isArray(data[0])) {\n        node.log(\"🔄 Converting array of arrays to objects\");\n        let list = [];\n        data.forEach(row => {\n            if (row.length >= 5) {\n                list.push({\n                    child_id: row[0],\n                    full_name: row[1],\n                    first_seen: row[2],\n                    session_count: row[3],\n                    System_Status: row[4]\n                });\n            }\n        });\n        node.log(\"✅ Converted \" + list.length + \" records\");\n        msg.payload = list;\n        return msg;\n    }\n}\n\n// If data is an object and not an array (e.g., {data: [...]})\nif (typeof data === 'object' && !Array.isArray(data)) {\n    node.log(\"🔍 Data is an object, looking for an array inside it\");\n    \n    // Look for any property containing an array\n    for (let key in data) {\n        if (Array.isArray(data[key])) {\n            node.log(\"✅ Found array in property: \" + key);\n            msg.payload = data[key];\n            return msg;\n        }\n    }\n}\n\n// If we reached here, the format is unknown\nnode.log(\"❌ Unknown data format: \" + JSON.stringify(data).substring(0, 200));\nmsg.payload = [];\nreturn msg;",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1260,
+        "y": 360,
+        "wires": [
+            [
+                "da4aea698b29231e"
+            ]
+        ]
+    },
+    {
+        "id": "da4aea698b29231e",
+        "type": "ui_template",
+        "z": "ce79c7761474feb1",
+        "group": "4e1a158ec8fdfad0",
+        "name": "Children Record",
+        "width": 6,
+        "height": 12,
+        "format": "<style>\n    .children-header {\n        display: flex;\n        justify-content: space-between;\n        align-items: center;\n        margin-bottom: 15px;\n    }\n\n    .children-table {\n        width: 100%;\n        border-collapse: collapse;\n        font-family: Arial, sans-serif;\n    }\n\n    .children-table th {\n        background-color: #4CAF50;\n        color: white;\n        padding: 10px;\n        text-align: center;\n        font-weight: bold;\n    }\n\n    .children-table td {\n        border: 1px solid #ddd;\n        padding: 8px;\n        text-align: center;\n    }\n\n    .children-table tr:nth-child(even) {\n        background-color: #f2f2f2;\n    }\n\n    .children-table tr:hover {\n        background-color: #ddd;\n    }\n\n    .status-active {\n        color: green;\n        font-weight: bold;\n    }\n\n    .status-inactive {\n        color: red;\n        font-weight: bold;\n    }\n\n    .refresh-btn {\n        background-color: #4CAF50;\n        color: white;\n        border: none;\n        padding: 10px 20px;\n        border-radius: 5px;\n        cursor: pointer;\n        font-size: 14px;\n    }\n\n    .refresh-btn:hover {\n        background-color: #45a049;\n    }\n</style>\n\n<div class='children-header'>\n    <h3>👥 Children Record</h3>\n    <button class='refresh-btn' ng-click='refresh()'>🔄 Refresh</button>\n</div>\n\n<table class='children-table'>\n    <thead>\n        <tr>\n            <th>Child ID</th>\n            <th>Full Name</th>\n            <th>First Seen</th>\n            <th>Session Count</th>\n            <th>Status</th>\n        </tr>\n    </thead>\n    <tbody>\n        <tr ng-repeat='c in msg.payload track by $index'>\n            <td>{{c.child_id || \"-\"}}</td>\n            <td>{{c.full_name || \"-\"}}</td>\n            <td>{{c.first_seen || \"-\"}}</td>\n            <td>{{c.session_count || 0}}</td>\n            <td>\n                <span ng-class=\"{'status-active': c.system_status === 'active', 'status-inactive': c.system_status === 'inactive'}\">\n                    {{c.system_status === 'active' ? 'Active' : (c.system_status === 'inactive' ? 'Inactive' : c.system_status || '-')}}\n                </span>\n            </td>\n        </tr>\n        <tr ng-if='!msg.payload || msg.payload.length === 0'>\n            <td colspan='5' style='text-align: center; padding: 30px; color: #666;'>\n                📝 No data available\n            </td>\n        </tr>\n    </tbody>\n</table>\n\n<script>\n    $scope.refresh = function() {\n    node.send({payload: Date.now()});\n};\n</script>",
+        "storeOutMessages": true,
+        "fwdInMessages": true,
+        "resendOnRefresh": false,
+        "templateScope": "local",
+        "className": "",
+        "x": 1520,
+        "y": 360,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "b270d6abdafd7532",
+        "type": "mqtt in",
+        "z": "ce79c7761474feb1",
+        "name": "Receive Sensor Data",
+        "topic": "BushraIzzaHafsa/robot/sensor_data",
+        "qos": 1,
+        "datatype": "json",
+        "broker": "mqtt_broker",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 960,
+        "y": 220,
+        "wires": [
+            [
+                "1e31ba9607ed48af"
+            ]
+        ]
+    },
+    {
+        "id": "f0c54a7e2fa81f58",
+        "type": "ui_gauge",
+        "z": "ce79c7761474feb1",
+        "name": "Current Weight",
+        "group": "4ad9122c2011b7d3",
+        "order": 1,
+        "width": 6,
+        "height": 4,
+        "gtype": "gage",
+        "title": "Current Weight (kg)",
+        "label": "kg",
+        "format": "{{value}}",
+        "min": 0,
+        "max": "15",
+        "colors": [
+            "#00b300",
+            "#e6e600",
+            "#ca3838"
+        ],
+        "seg1": "5",
+        "seg2": "10",
+        "diff": false,
+        "className": "",
+        "x": 1440,
+        "y": 160,
+        "wires": []
+    },
+    {
+        "id": "d9c2ac911ae3aade",
+        "type": "ui_gauge",
+        "z": "ce79c7761474feb1",
+        "name": "Muscle Strength",
+        "group": "4ad9122c2011b7d3",
+        "order": 3,
+        "width": 6,
+        "height": 4,
+        "gtype": "gage",
+        "title": "Muscle Activity (%)",
+        "label": "%",
+        "format": "{{value}}",
+        "min": 0,
+        "max": 100,
+        "colors": [
+            "#cdd7f4",
+            "#f3e0ff",
+            "#ffa3e2"
+        ],
+        "seg1": "40",
+        "seg2": "70",
+        "diff": false,
+        "className": "",
+        "x": 1440,
+        "y": 200,
+        "wires": []
+    },
+    {
+        "id": "38de697de0029f4c",
+        "type": "ui_template",
+        "z": "ce79c7761474feb1",
+        "group": "4ad9122c2011b7d3",
+        "name": "Joint Angles",
+        "order": 2,
+        "width": "0",
+        "height": "0",
+        "format": "<style>\n    .joint-container {\n        display: grid;\n        grid-template-columns: repeat(3, 1fr);\n        gap: 12px;\n        margin-top: 10px;\n    }\n\n    .joint-card {\n        background: white;\n        border-radius: 10px;\n        padding: 12px;\n        text-align: center;\n        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);\n    }\n\n    .joint-name {\n        font-weight: bold;\n        color: #2E86C1;\n        margin-bottom: 6px;\n    }\n\n    .joint-angle {\n        font-size: 24px;\n        font-weight: bold;\n    }\n\n    .normal {\n        color: #28a745\n    }\n\n    .warning {\n        color: #ffc107\n    }\n\n    .danger {\n        color: #dc3545\n    }\n</style>\n\n<h3>🦿 Joint Angles</h3>\n\n<div id=\"joints\" class=\"joint-container\"></div>\n\n<script>\n    (function(scope){\n\nconst names=[\n\"Left Hip\",\"Left Knee\",\"Left Ankle\",\n\"Right Hip\",\"Right Knee\",\"Right Ankle\"\n];\n\nfunction draw(angles){\n\nif(!angles){\nangles=[90,90,90,90,90,90];\n}\n\nlet html=\"\";\n\nfor(let i=0;i<6;i++){\n\nlet a=Number(angles[i])||90;\n\nlet cls=\"normal\";\n\nif(a>120) cls=\"warning\";\nif(a<60) cls=\"danger\";\n\nhtml+=`\n<div class=\"joint-card\">\n<div class=\"joint-name\">${names[i]}</div>\n<div class=\"joint-angle ${cls}\">\n${a.toFixed(1)}°\n</div>\n</div>\n`;\n\n}\n\ndocument.getElementById(\"joints\").innerHTML=html;\n\n}\n\ndraw([90,90,90,90,90,90]);\n\nscope.$watch('msg.payload',function(data){\nif(data){\ndraw(data);\n}\n});\n\n})(scope);\n</script>",
+        "storeOutMessages": true,
+        "fwdInMessages": true,
+        "resendOnRefresh": false,
+        "templateScope": "local",
+        "className": "",
+        "x": 1430,
+        "y": 240,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "1e31ba9607ed48af",
+        "type": "function",
+        "z": "ce79c7761474feb1",
+        "name": "Process ESP32 Data",
+        "func": "const data = msg.payload;\n\n// ===== 1. Save Joint Angles =====\nlet jointsArray = [90,90,90,90,90,90];\n\nif (data.joint_angles) {\n    jointsArray = [\n        Number(data.joint_angles.Left_Hip) || 10,\n        Number(data.joint_angles.Left_Knee) || 90,\n        Number(data.joint_angles.Left_Ankle) || 90,\n        Number(data.joint_angles.Right_Hip) || 90,\n        Number(data.joint_angles.Right_Knee) || 90,\n        Number(data.joint_angles.Right_Ankle) || 90\n    ];\n    \n    // تشخيص\n    node.warn(\"✅ Joint Angles: \" + jointsArray.map(a => a.toFixed(1)).join(', '));\n}\n\n// ===== 2. Current Weight\nlet weightMsg = {\n    payload: Number(data.currentWeight) || 0\n};\n\n// ===== 3. Muscle Strength\nlet muscleMsg = {\n    payload: Number(data.muscleStrength) || 0\n};\n\n// ===== 4. Send Joint Angles to UI (مصفوفة مباشرة)\nlet jointMsg = {\n    payload: jointsArray,\n    topic: \"joint_angles\"\n};\n\n// ===== 5. Google Sheet\nlet sheetMsg = {\n    payload: {\n        currentWeight: Number(data.currentWeight) || 0,\n        muscleStrength: Number(data.muscleStrength) || 0,\n        childName: data.childName || \"\",\n        exerciseType: data.exerciseType || \"\",\n        phase: data.phase || \"\",\n        maxWeight: data.maxWeight || 0,\n        systemStatus: data.systemStatus || \"inactive\"\n    }\n};\n\nreturn [weightMsg, muscleMsg, jointMsg, sheetMsg];",
+        "outputs": 4,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1200,
+        "y": 220,
+        "wires": [
+            [
+                "f0c54a7e2fa81f58"
+            ],
+            [
+                "d9c2ac911ae3aade"
+            ],
+            [
+                "38de697de0029f4c"
+            ],
+            [
+                "7796ea15c792ee81"
+            ]
+        ]
+    },
+    {
+        "id": "7796ea15c792ee81",
+        "type": "http request",
+        "z": "ce79c7761474feb1",
+        "name": "POST to Google Script",
+        "method": "POST",
+        "ret": "txt",
+        "paytoqs": "ignore",
+        "url": "https://script.google.com/macros/s/.../exec",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [],
+        "x": 1460,
+        "y": 280,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "d0ad2caa594c11c1",
+        "type": "inject",
+        "z": "ce79c7761474feb1",
+        "name": "Test Status",
+        "props": [
+            {
+                "p": "payload"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "Active",
+        "payloadType": "str",
+        "x": 320,
+        "y": 680,
+        "wires": [
+            [
+                "bd8885ad7976b557"
+            ]
+        ]
+    },
+    {
+        "id": "bd8885ad7976b557",
+        "type": "exec",
+        "z": "ce79c7761474feb1",
+        "command": "/opt/anaconda3/bin/python3 /Users/bushra/Desktop/capture_two_images.py",
+        "addpay": "",
+        "append": "",
+        "useSpawn": "false",
+        "timer": "",
+        "winHide": false,
+        "oldrc": false,
+        "name": "capture",
+        "x": 460,
+        "y": 680,
+        "wires": [
+            [],
+            [],
+            []
+        ]
+    },
+    {
+        "id": "5d4dc67def28de48",
+        "type": "inject",
+        "z": "ce79c7761474feb1",
+        "name": "Image Test",
+        "props": [
+            {
+                "p": "payload"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": "",
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 320,
+        "y": 820,
+        "wires": [
+            [
+                "analyze_exec_1"
+            ]
+        ]
+    },
+    {
+        "id": "245dc76a831ae7b1",
+        "type": "function",
+        "z": "ce79c7761474feb1",
+        "name": "Prepare Audio",
+        "func": "let text = msg.payload.text;\n\nif (!text) {\n    text = \"You are awesome 👏\";\n}\n\n// audio URL\nmsg.url = \"https://translate.google.com/translate_tts?ie=UTF-8&tl=en&client=tw-ob&q=\" + encodeURIComponent(text);\n\nmsg.method = \"GET\";\n\n// important\nmsg.headers = {\n    \"User-Agent\": \"Mozilla/5.0\"\n};\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 540,
+        "y": 1060,
+        "wires": [
+            [
+                "d389bee85be7403f"
+            ]
+        ]
+    },
+    {
+        "id": "d389bee85be7403f",
+        "type": "http request",
+        "z": "ce79c7761474feb1",
+        "name": "gTTS",
+        "method": "GET",
+        "ret": "bin",
+        "paytoqs": "ignore",
+        "url": "",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [],
+        "x": 690,
+        "y": 1060,
+        "wires": [
+            [
+                "796945c63a828246",
+                "51b32589ebd481fa"
+            ]
+        ]
+    },
+    {
+        "id": "796945c63a828246",
+        "type": "function",
+        "z": "ce79c7761474feb1",
+        "name": "Check Audio",
+        "func": "if (!msg.payload || msg.payload.length < 100) {\n    node.error(\"❌ Audio is empty or failed to download\");\n    return null;\n}\n\nnode.warn(\"✅ Audio downloaded\");\nreturn msg;",
+        "outputs": 1,
+        "x": 860,
+        "y": 1060,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "51b32589ebd481fa",
+        "type": "file",
+        "z": "ce79c7761474feb1",
+        "name": "Save Audio",
+        "filename": "/tmp/motivation.mp3",
+        "filenameType": "str",
+        "appendNewline": false,
+        "createDir": true,
+        "overwriteFile": true,
+        "encoding": "none",
+        "x": 850,
+        "y": 1100,
+        "wires": [
+            [
+                "37ddc7f21d89c530"
+            ]
+        ]
+    },
+    {
+        "id": "37ddc7f21d89c530",
+        "type": "exec",
+        "z": "ce79c7761474feb1",
+        "command": "afplay /tmp/motivation.mp3",
+        "addpay": "",
+        "append": "",
+        "useSpawn": "false",
+        "timer": "",
+        "winHide": false,
+        "name": "Play Audio",
+        "x": 1060,
+        "y": 1100,
+        "wires": [
+            [
+                "36fe8ebfa15b37cb"
+            ],
+            [
+                "5aa886c390db2b0b"
+            ],
+            []
+        ]
+    },
+    {
+        "id": "36fe8ebfa15b37cb",
+        "type": "debug",
+        "z": "ce79c7761474feb1",
+        "name": "✅ Play Successful",
+        "active": true,
+        "tosidebar": true,
+        "complete": "true",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1290,
+        "y": 1060,
+        "wires": []
+    },
+    {
+        "id": "5aa886c390db2b0b",
+        "type": "debug",
+        "z": "ce79c7761474feb1",
+        "name": "❌ Play Error",
+        "active": true,
+        "tosidebar": true,
+        "complete": "payload",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1260,
+        "y": 1100,
+        "wires": []
+    },
+    {
+        "id": "251cf98da5987b9f",
+        "type": "http request",
+        "z": "ce79c7761474feb1",
+        "name": "meta-llama AI",
+        "method": "POST",
+        "ret": "obj",
+        "paytoqs": "ignore",
+        "url": "",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [],
+        "x": 720,
+        "y": 980,
+        "wires": [
+            [
+                "ba5fdc02f26dd684",
+                "2475b413af55fcca"
+            ]
+        ]
+    },
+    {
+        "id": "ba5fdc02f26dd684",
+        "type": "debug",
+        "z": "ce79c7761474feb1",
+        "name": "📦 Raw meta-llama Response",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1010,
+        "y": 980,
+        "wires": []
+    },
+    {
+        "id": "48a379101523ba68",
+        "type": "function",
+        "z": "ce79c7761474feb1",
+        "name": "Process Response (OpenRouter)",
+        "func": "// Convert  response to JSON\nlet colabResponse = {};\ntry { \n    colabResponse = JSON.parse(msg.payload); \n    node.warn('✅ Successfully converted Colab response'); \n    node.warn(`📊 Movement: ${colabResponse.movement || 'undefined'}, Percentage: ${colabResponse.percentage || 0}%`);\n} catch(e){ \n    node.warn('⚠️ Response is not JSON, using default data');\n    colabResponse = msg.payload;\n}\n\n// Prepare prompt\nlet movementText = colabResponse.movement === 'moving' ? 'very active' : 'still';\nlet percentage = colabResponse.percentage || 0;\nlet feedback = colabResponse.feedback || 'Good movement';\n\nlet promptText = `You are an enthusiastic and warm physiotherapy coach working with a ${3}-${4} year old child right in front of you.\n\nYou can see the child moving and here is exactly what you observe:\n- The child is ${movementText} right now\n- Movement level: ${colabResponse.message || 'Unknown'}\n- Activity percentage: ${percentage}%\n- The most moving body part you see: ${colabResponse.most_active || 'Unknown'}\n- How their body looks: ${colabResponse.posture || 'Unknown'}\n\nSpeak DIRECTLY to the child as if you are looking at them right now.\nUse very simple words a 3-4 year old understands.\nBe warm, excited and loving like a fun coach playing with them.\n\nRules:\n- If percentage is 0 or no movement: gently encourage them to start moving\n- If percentage is 1-40%: cheer them to move more\n- If percentage is 41-100%: celebrate their amazing effort loudly\n\nRequirement: One short sentence spoken directly to the child (max 20 words). No emojis. Plain text only.`;\nnode.warn(`📝 Sending prompt to OpenRouter...`);\n\n// OpenRouter format\nmsg.payload = {\n    model: \"meta-llama/llama-3-8b-instruct\",\n    messages: [\n        {role: \"system\", content: \"You are a kids sports coach, use motivational and encouraging style.\"},\n        {role: \"user\", content: promptText}\n    ]\n};\n\nmsg.headers = {\n    \"Authorization\": \"Bearer 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\",\n    \"Content-Type\": \"application/json\"\n};\n\nmsg.method = \"POST\";\nmsg.url = \"https://openrouter.ai/api/v1/chat/completions\";\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 440,
+        "y": 980,
+        "wires": [
+            [
+                "251cf98da5987b9f"
+            ]
+        ]
+    },
+    {
+        "id": "2475b413af55fcca",
+        "type": "function",
+        "z": "ce79c7761474feb1",
+        "name": "Extract ai Text",
+        "func": "let aiText = '';\n\n// If there is an error\nif (msg.payload && msg.payload.error) {\n    node.warn(\"❌ OpenRouter has an issue - using fallback\");\n    aiText = 'No text - fallback';\n}\n\n// Extract text - OpenRouter/OpenAI format\nelse if (msg.payload?.choices?.[0]?.message?.content) {\n    aiText = msg.payload.choices[0].message.content;\n    aiText = aiText.replace(/[\\*\\#\\_\\n]/g, ' ').trim();\n    node.warn(\"✅ Text extracted\");\n}\n\n// fallback\nelse {\n    node.warn(\"⚠️ No text - fallback\");\n    aiText = 'Great! Keep going champ 👏';\n}\n\n// Save text\nmsg.payload = {\n    text: aiText\n};\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 350,
+        "y": 1060,
+        "wires": [
+            [
+                "245dc76a831ae7b1",
+                "4667fd3bcb1cafb8"
+            ]
+        ]
+    },
+    {
+        "id": "4667fd3bcb1cafb8",
+        "type": "debug",
+        "z": "ce79c7761474feb1",
+        "name": "ai text",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 500,
+        "y": 1120,
+        "wires": []
+    },
+    {
+        "id": "ccd9fd08ed27065e",
+        "type": "ui_dropdown",
+        "z": "ce79c7761474feb1",
+        "name": "Exercise Type",
+        "label": "Exercise Type:",
+        "tooltip": "",
+        "place": "Select",
+        "group": "child_group",
+        "order": 2,
+        "width": 6,
+        "height": 1,
+        "passthru": true,
+        "multiple": false,
+        "options": [
+            {
+                "label": "Walking Exercise",
+                "value": "walk",
+                "type": "str"
+            },
+            {
+                "label": "Knee Raise Exercise",
+                "value": "knee",
+                "type": "str"
+            }
+        ],
+        "payload": "walk",
+        "topic": "exercise",
+        "topicType": "str",
+        "className": "",
+        "x": 340,
+        "y": 360,
+        "wires": [
+            [
+                "631885f11cad80bf"
+            ]
+        ]
+    },
+    {
+        "id": "ce480f656cb84bb4",
+        "type": "ui_dropdown",
+        "z": "ce79c7761474feb1",
+        "name": "Phase",
+        "label": "Phase:",
+        "tooltip": "",
+        "place": "Select",
+        "group": "child_group",
+        "order": 3,
+        "width": 6,
+        "height": 1,
+        "passthru": true,
+        "multiple": false,
+        "options": [
+            {
+                "label": "Phase 1 (Without Assistance)",
+                "value": "1",
+                "type": "str"
+            },
+            {
+                "label": "Phase 2 (With EMG Assistance)",
+                "value": "2",
+                "type": "str"
+            }
+        ],
+        "payload": "1",
+        "topic": "phase",
+        "topicType": "str",
+        "className": "",
+        "x": 310,
+        "y": 400,
+        "wires": [
+            [
+                "631885f11cad80bf"
+            ]
+        ]
+    },
+    {
+        "id": "analyze_exec_1",
+        "type": "exec",
+        "z": "ce79c7761474feb1",
+        "command": "/opt/anaconda3/bin/python3 /Users/bushra/Desktop/analyze_images.py /Users/bushra/Desktop/frame1.jpg /Users/bushra/Desktop/frame2.jpg",
+        "addpay": "",
+        "append": "",
+        "useSpawn": "false",
+        "timer": "",
+        "winHide": false,
+        "oldrc": false,
+        "name": "analyze",
+        "x": 500,
+        "y": 820,
+        "wires": [
+            [
+                "json_parse_1"
+            ],
+            [],
+            []
+        ]
+    },
+    {
+        "id": "json_parse_1",
+        "type": "json",
+        "z": "ce79c7761474feb1",
+        "name": "",
+        "property": "payload",
+        "action": "",
+        "pretty": false,
+        "x": 670,
+        "y": 820,
+        "wires": [
+            [
+                "debug_result_1",
+                "48a379101523ba68",
+                "extract_activity"
+            ]
+        ]
+    },
+    {
+        "id": "debug_result_1",
+        "type": "debug",
+        "z": "ce79c7761474feb1",
+        "name": "Analysis Result",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "complete": "payload",
+        "x": 760,
+        "y": 900,
+        "wires": []
+    },
+    {
+        "id": "extract_activity",
+        "type": "function",
+        "z": "ce79c7761474feb1",
+        "name": "Extract Activity",
+        "func": "msg.payload = JSON.stringify({\n    movement: msg.payload.movement,\n    percentage: msg.payload.percentage,\n    posture: msg.payload.posture,\n    most_active: msg.payload.most_active,\n    level: msg.payload.level,\n    angles: msg.payload.angles,\n    feedback: msg.payload.feedback\n});\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 840,
+        "y": 820,
+        "wires": [
+            [
+                "c2de9fb16081b9f7"
+            ]
+        ]
+    },
+    {
+        "id": "visual_exec",
+        "type": "exec",
+        "z": "ce79c7761474feb1",
+        "command": "python3 /Users/bushra/Desktop/visual_generator.py",
+        "addpay": "payload",
+        "append": "",
+        "useSpawn": "false",
+        "timer": "",
+        "winHide": false,
+        "oldrc": false,
+        "name": "Generate Visual",
+        "x": 1160,
+        "y": 820,
+        "wires": [
+            [
+                "debug_success",
+                "febe7ec904f00ad8"
+            ],
+            [],
+            [
+                "debug_error"
+            ]
+        ]
+    },
+    {
+        "id": "debug_success",
+        "type": "debug",
+        "z": "ce79c7761474feb1",
+        "name": "Visual Output",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "x": 1400,
+        "y": 840,
+        "wires": []
+    },
+    {
+        "id": "debug_error",
+        "type": "debug",
+        "z": "ce79c7761474feb1",
+        "name": "Error",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "x": 1370,
+        "y": 880,
+        "wires": []
+    },
+    {
+        "id": "febe7ec904f00ad8",
+        "type": "file in",
+        "z": "ce79c7761474feb1",
+        "name": "Read Image",
+        "filename": "/Users/bushra/Desktop/feedback_output.gif",
+        "filenameType": "str",
+        "format": "",
+        "chunk": false,
+        "sendError": false,
+        "encoding": "none",
+        "allProps": false,
+        "x": 1390,
+        "y": 800,
+        "wires": [
+            [
+                "77a5382a16956ce0"
+            ]
+        ]
+    },
+    {
+        "id": "77a5382a16956ce0",
+        "type": "function",
+        "z": "ce79c7761474feb1",
+        "name": "to base64 image",
+        "func": "msg.payload = \"data:image/png;base64,\" + msg.payload.toString('base64');\nreturn msg;",
+        "outputs": 1,
+        "x": 1600,
+        "y": 800,
+        "wires": [
+            [
+                "2a2c4aed304feef9"
+            ]
+        ]
+    },
+    {
+        "id": "2a2c4aed304feef9",
+        "type": "ui_template",
+        "z": "ce79c7761474feb1",
+        "group": "child_group",
+        "name": "visual",
+        "order": 5,
+        "width": "6",
+        "height": "6",
+        "format": "<div style=\"text-align:center;padding:20px\">\n\n    <h2>Live Therapy Coach</h2>\n    <img ng-src='{{msg.payload}}' style='width:100%;border-radius:10px'/>\n    </div>\n",
+        "storeOutMessages": true,
+        "fwdInMessages": true,
+        "resendOnRefresh": true,
+        "templateScope": "local",
+        "className": "",
+        "x": 1770,
+        "y": 800,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "c2de9fb16081b9f7",
+        "type": "function",
+        "z": "ce79c7761474feb1",
+        "name": "json",
+        "func": "msg.payload = JSON.stringify(msg.payload);\nreturn msg;",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 990,
+        "y": 820,
+        "wires": [
+            [
+                "visual_exec"
+            ]
+        ]
+    },
+    {
+        "id": "child_group",
+        "type": "ui_group",
+        "z": "ce79c7761474feb1",
+        "name": "Child Data",
+        "tab": "main_tab",
+        "order": 1,
+        "disp": true,
+        "width": "6",
+        "collapse": false,
+        "className": ""
+    },
+    {
+        "id": "control_group",
+        "type": "ui_group",
+        "name": "Control",
+        "tab": "main_tab",
+        "order": 2,
+        "disp": true,
+        "width": "6",
+        "collapse": false
+    },
+    {
+        "id": "mqtt_broker",
+        "type": "mqtt-broker",
+        "name": "MQTT Broker",
+        "broker": "10.9.9.215",
+        "port": "1883",
+        "clientid": "node-red-robot",
+        "autoConnect": true,
+        "usetls": false,
+        "protocolVersion": "4",
+        "keepalive": "60",
+        "cleansession": true,
+        "autoUnsubscribe": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthRetain": "false",
+        "birthPayload": "",
+        "birthMsg": {},
+        "closeTopic": "",
+        "closeQos": "0",
+        "closeRetain": "false",
+        "closePayload": "",
+        "closeMsg": {},
+        "willTopic": "",
+        "willQos": "0",
+        "willRetain": "false",
+        "willPayload": "",
+        "willMsg": {},
+        "userProps": "",
+        "sessionExpiry": ""
+    },
+    {
+        "id": "4e1a158ec8fdfad0",
+        "type": "ui_group",
+        "name": "Children Record",
+        "tab": "main_tab",
+        "order": 4,
+        "disp": true,
+        "width": "6",
+        "collapse": false
+    },
+    {
+        "id": "4ad9122c2011b7d3",
+        "type": "ui_group",
+        "name": "Live Data",
+        "tab": "main_tab",
+        "order": 3,
+        "disp": true,
+        "width": "6",
+        "collapse": false,
+        "className": ""
+    },
+    {
+        "id": "main_tab",
+        "type": "ui_tab",
+        "name": "Medical Robot",
+        "icon": "fa-heartbeat",
+        "order": 1,
+        "disabled": false,
+        "hidden": false
+    },
+    {
+        "id": "6bf4647d453ec5ba",
+        "type": "global-config",
+        "env": [],
+        "modules": {
+            "node-red-dashboard": "3.6.6"
+        }
+    }
+]
